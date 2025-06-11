@@ -3,9 +3,9 @@
 
     const TOOLTIP_TIMEOUT = 2000;
     const PREDICTION_BIAS = 0.3;
-    const PREDICTION_THRESHOLD = 0.3;
-    const safeColor = [76, 175, 80];    // green
-    const dangerColor = [244, 67, 54];  // red
+    const PREDICTION_THRESHOLD = 0.0;
+    const safeColor = [76, 175, 80];    
+    const dangerColor = [244, 67, 54];  
 
     function extractFeatures(url) {
         const a = document.createElement('a');
@@ -71,49 +71,125 @@
 
     const tooltip = document.createElement("div");
     tooltip.style.position = "absolute";
-    tooltip.style.background = "gray";
+    tooltip.style.background = "#000";
     tooltip.style.color = "#fff";
     tooltip.style.padding = "2px 6px";
     tooltip.style.fontSize = "12px";
     tooltip.style.borderRadius = "4px";
-    tooltip.style.zIndex = 9999;
-    tooltip.style.display = "none";
+    tooltip.style.zIndex = "9999";
     tooltip.className = "phishing-detector-tooltip";
+    tooltip.style.cursor = "default";
+    tooltip.style.whiteSpace = "nowrap";
+    tooltip.style.top = "-24px";
+    tooltip.style.left = "0";
+    tooltip.style.display = "none";
+
+    const tooltipText = document.createElement("span");
+
+    const explanationLink = document.createElement("span");
+    explanationLink.innerText = "Why?";
+    explanationLink.style.color = "#add8e6";
+    explanationLink.style.marginLeft = "6px";
+    explanationLink.style.fontSize = "11px";
+
+    const explanationPopup = document.createElement("div");
+    explanationPopup.style.position = "fixed";
+    explanationPopup.style.top = "10px";
+    explanationPopup.style.left = "10px";
+    explanationPopup.style.background = "#fff";
+    explanationPopup.style.color = "#000";
+    explanationPopup.style.padding = "8px 12px";
+    explanationPopup.style.border = "1px solid #ccc";
+    explanationPopup.style.borderRadius = "6px";
+    explanationPopup.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+    explanationPopup.style.fontSize = "13px";
+    explanationPopup.style.maxWidth = "300px";
+    explanationPopup.style.zIndex = "10000";
+    explanationPopup.style.display = "none";
+
+
+    tooltip.appendChild(tooltipText);
+    tooltip.appendChild(explanationLink);
+
+    document.body.appendChild(explanationPopup);
     document.body.appendChild(tooltip);
 
     let hideTimeout = null;
+    let currentAnchor = null;
 
-    function showTooltip(target, text, color) {
-        tooltip.textContent = text;
+    function showTooltip(anchor, text, color) {
+        tooltipText.textContent = text;
         tooltip.style.background = color;
-        tooltip.style.top = (target.getBoundingClientRect().top + window.scrollY - 24) + "px";
-        tooltip.style.left = (target.getBoundingClientRect().left + window.scrollX) + "px";
         tooltip.style.display = "block";
 
-        if (hideTimeout) clearTimeout(hideTimeout);
+        anchor.style.position = "relative";
+        anchor.appendChild(tooltip);
+    }
+
+    function hideTooltipWithDelay() {
         hideTimeout = setTimeout(() => {
             tooltip.style.display = "none";
+            if (tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+            currentAnchor = null;
         }, TOOLTIP_TIMEOUT);
+    }
+
+    function cancelHideTooltip() {
+        clearTimeout(hideTimeout);
     }
 
     document.addEventListener("mouseover", (e) => {
         const a = e.target.closest("a[href]");
-        if (!a) return;
+        if (!a || a === currentAnchor) return;
 
+        currentAnchor = a;
+        cancelHideTooltip();
 
         const features = extractFeatures(a.href);
-
         let prediction = score(features)[0];
 
-        if(prediction >= PREDICTION_THRESHOLD) {
+        if (prediction >= PREDICTION_THRESHOLD) {
             let label = "Suspicious link";
             if (prediction > 0.75) label = "Phishing link";
 
-            prediction = Math.min(prediction + PREDICTION_BIAS , 1.0);
-            label += ": " + prediction.toFixed(3) + "%";
+            prediction = Math.min(prediction + PREDICTION_BIAS, 1.0);
+            label += ": " + prediction.toFixed(3);
             const color = lerpRGB(safeColor, dangerColor, prediction);
+
             showTooltip(a, label, color);
         }
-
     });
+
+    
+    document.addEventListener("mouseout", (e) => {
+        const related = e.relatedTarget;
+        if (
+            currentAnchor &&
+            !currentAnchor.contains(related) &&
+            !tooltip.contains(related)
+        ) {
+            hideTooltipWithDelay();
+        }
+    });
+
+
+    tooltip.addEventListener("mouseover", cancelHideTooltip);
+
+    tooltip.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault(); 
+    });
+
+
+    tooltip.addEventListener("mouseout", (e) => {
+        const related = e.relatedTarget;
+        if (
+            currentAnchor &&
+            !currentAnchor.contains(related) &&
+            !tooltip.contains(related)
+        ) {
+            hideTooltipWithDelay();
+        }
+    });
+
 })();
