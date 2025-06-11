@@ -1,4 +1,4 @@
-function score(input) {
+export function score(input) {
     var var0;
     if (input[6] <= 0.5) {
         if (input[7] <= 0.5) {

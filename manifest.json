@@ -1,19 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Phishing Detector",
+  "name": "Phishing Link Detector",
   "version": "1.0",
-  "description": "Detects phishing websites using a trained ML model.",
-  "permissions": ["tabs", "activeTab", "scripting"],
-  "host_permissions": ["<all_urls>"],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
-  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "type": "module"
     }
-  ]
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["model.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": []
 }
