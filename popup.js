@@ -1,23 +1,27 @@
-chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    const url = tabs[0].url;
+document.addEventListener('DOMContentLoaded', async () => {
+    const toggle = document.getElementById('exclude-toggle');
 
-    chrome.tabs.sendMessage(tabs[0].id, { action: "extractFeatures" }, (response) => {
-        if (chrome.runtime.lastError) {
-            console.error("Content script not found or not responding.");
-            return;
-        }
-        if (!response || !response.features) {
-            console.error("No features returned from content script.");
-            return;
-        }
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        const features = response.features;
-        const prediction = score(features); // from model.js
+    const url = new URL(tab.url);
+    const domain = url.hostname;
 
-        console.log(url);
-        console.log("Features:", features);
-        console.log("Prediction:", prediction);
 
-        document.getElementById("status").innerText = "Prob of phish: " + prediction[0] + "\n" + features.join('\n');
+    chrome.storage.local.get(['excludedDomains'], (result) => {
+        const excluded = result.excludedDomains || [];
+        toggle.checked = excluded.includes(domain);
+    });
+
+    toggle.addEventListener('change', () => {
+        chrome.storage.local.get(['excludedDomains'], (result) => {
+            const excluded = result.excludedDomains || [];
+            if (toggle.checked && !excluded.includes(domain)) {
+                excluded.push(domain);
+            } else if (!toggle.checked) {
+                const index = excluded.indexOf(domain);
+                if (index > -1) excluded.splice(index, 1);
+            }
+            chrome.storage.local.set({ excludedDomains: excluded });
+        });
     });
 });

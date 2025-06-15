@@ -1,11 +1,15 @@
+
 (async () => {
     const {score} = await import(chrome.runtime.getURL('model.js'));
+    const {featureExplanations} = await import(chrome.runtime.getURL('variables.js'));
+    const { explanationPopup, explanationContent } = await import(chrome.runtime.getURL('explanation-popup.js'));
+
 
     const TOOLTIP_TIMEOUT = 2000;
-    const PREDICTION_BIAS = 0.3;
+    const PREDICTION_BIAS = 0.1;
     const PREDICTION_THRESHOLD = 0.0;
     const safeColor = [76, 175, 80];    
-    const dangerColor = [244, 67, 54];  
+    const dangerColor = [244, 67, 54];
 
     function extractFeatures(url) {
         const a = document.createElement('a');
@@ -26,13 +30,13 @@
         features.push(dotsCount === 1 ? 1 : -1);
         features.push(url.startsWith('https://') ? 1 : -1);
         features.push(0);
-        features.push(checkFavicon());
+        features.push(0);
         features.push([80, 443, ''].includes(a.port) ? 1 : -1);
         features.push(a.hostname.includes('https') ? -1 : 1);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
+        features.push(0); // request URL (If the external objects in a web page are loaded from another domain)
+        features.push(0); // URL of anchor (If the <a> tags and the website have different domain names.)
+        features.push(0); // links_in_tags' (tags are linked to the same domain of the webpage. )
+        features.push(0); //SFH (SFHs that contain an empty string or “about:blank”)
         features.push(url.includes('mailto:') ? -1 : 1);
         features.push(url.includes(a.hostname) ? 1 : -1);
         features.push(0);
@@ -50,13 +54,8 @@
         return features;
     }
 
-    function checkFavicon() {
-        const icon = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
-        if (!icon) return -1;
-        const iconUrl = new URL(icon.href, location.href);
-        console.log(iconUrl.hostname + " " + location.hostname);
-        return iconUrl.hostname === location.hostname ? 1 : -1;
-    }
+
+
 
     function lerpChannel(start, end, t) {
         return Math.round(start + (end - start) * t);
@@ -92,30 +91,17 @@
     explanationLink.style.marginLeft = "6px";
     explanationLink.style.fontSize = "11px";
 
-    const explanationPopup = document.createElement("div");
-    explanationPopup.style.position = "fixed";
-    explanationPopup.style.top = "10px";
-    explanationPopup.style.left = "10px";
-    explanationPopup.style.background = "#fff";
-    explanationPopup.style.color = "#000";
-    explanationPopup.style.padding = "8px 12px";
-    explanationPopup.style.border = "1px solid #ccc";
-    explanationPopup.style.borderRadius = "6px";
-    explanationPopup.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
-    explanationPopup.style.fontSize = "13px";
-    explanationPopup.style.maxWidth = "300px";
-    explanationPopup.style.zIndex = "10000";
-    explanationPopup.style.display = "none";
-
 
     tooltip.appendChild(tooltipText);
     tooltip.appendChild(explanationLink);
 
-    document.body.appendChild(explanationPopup);
+
     document.body.appendChild(tooltip);
 
     let hideTimeout = null;
     let currentAnchor = null;
+    let lastFeatures = null;
+
 
     function showTooltip(anchor, text, color) {
         tooltipText.textContent = text;
@@ -138,7 +124,47 @@
         clearTimeout(hideTimeout);
     }
 
-    document.addEventListener("mouseover", (e) => {
+
+    function showExplanationPopup(features) {
+
+        const ul = document.createElement("ul");
+        ul.style.margin = "0";
+        ul.style.padding = "0";
+        ul.style.listStyleType = "none";
+        ul.style.fontSize = "13px";
+
+        for (const key in features) {
+            if (features[key] === -1) {
+                const li = document.createElement("li");
+                li.textContent = "❗" + featureExplanations[key];
+                ul.appendChild(li);
+            }
+        }
+
+        explanationContent.innerHTML = ""; // Clear previous content
+        if (ul.children.length > 0) {
+
+            explanationContent.appendChild(ul);
+            explanationPopup.style.display = "block";
+        } else {
+            explanationPopup.style.display = "none";
+        }
+    }
+
+    explanationLink.style.cursor = "pointer";
+    explanationLink.addEventListener("click", (e) => {
+
+        e.stopPropagation();
+        e.preventDefault();
+        if (lastFeatures) showExplanationPopup(lastFeatures);
+    });
+
+    document.addEventListener("mouseover", async (e) => {
+
+        const domain = location.hostname;
+        const {excludedDomains = []} = await chrome.storage.local.get('excludedDomains');
+        if (excludedDomains.includes(domain)) return;
+
         const a = e.target.closest("a[href]");
         if (!a || a === currentAnchor) return;
 
@@ -149,6 +175,8 @@
         let prediction = score(features)[0];
 
         if (prediction >= PREDICTION_THRESHOLD) {
+            lastFeatures = features;
+
             let label = "Suspicious link";
             if (prediction > 0.75) label = "Phishing link";
 
@@ -160,7 +188,6 @@
         }
     });
 
-    
     document.addEventListener("mouseout", (e) => {
         const related = e.relatedTarget;
         if (
@@ -172,14 +199,12 @@
         }
     });
 
-
     tooltip.addEventListener("mouseover", cancelHideTooltip);
 
     tooltip.addEventListener("click", (e) => {
         e.stopPropagation();
         e.preventDefault(); 
     });
-
 
     tooltip.addEventListener("mouseout", (e) => {
         const related = e.relatedTarget;
