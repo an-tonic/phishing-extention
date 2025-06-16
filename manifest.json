@@ -16,7 +16,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["model.js", "variables.js", "explanation-popup.js"],
+      "resources": ["model_for_links.js", "variables.js", "explanation-popup.js"],
       "matches": ["<all_urls>"]
     }
   ]

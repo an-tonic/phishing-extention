@@ -1,6 +1,6 @@
 
 (async () => {
-    const {score} = await import(chrome.runtime.getURL('model.js'));
+    const {score} = await import(chrome.runtime.getURL('model_for_links.js'));
     const {featureExplanations} = await import(chrome.runtime.getURL('variables.js'));
     const { explanationPopup, explanationContent } = await import(chrome.runtime.getURL('explanation-popup.js'));
 
@@ -29,32 +29,30 @@
         const dotsCount = a.hostname.split('.').length - 1;
         features.push(dotsCount === 1 ? 1 : -1);
         features.push(url.startsWith('https://') ? 1 : -1);
-        features.push(0);
-        features.push(0);
-        features.push([80, 443, ''].includes(a.port) ? 1 : -1);
+        // features.push(0);
+        // features.push(0);
+        // features.push([80, 443, ''].includes(a.port) ? 1 : -1);
         features.push(a.hostname.includes('https') ? -1 : 1);
-        features.push(0); // request URL (If the external objects in a web page are loaded from another domain)
-        features.push(0); // URL of anchor (If the <a> tags and the website have different domain names.)
-        features.push(0); // links_in_tags' (tags are linked to the same domain of the webpage. )
-        features.push(0); //SFH (SFHs that contain an empty string or “about:blank”)
-        features.push(url.includes('mailto:') ? -1 : 1);
-        features.push(url.includes(a.hostname) ? 1 : -1);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
-        features.push(0);
+        // features.push(0); // request URL (If the external objects in a web page are loaded from another domain)
+        // features.push(0); // URL of anchor (If the <a> tags and the website have different domain names.)
+        // features.push(0); // links_in_tags' (tags are linked to the same domain of the webpage. )
+        // features.push(0); //SFH (SFHs that contain an empty string or “about:blank”)
+        // features.push(url.includes('mailto:') ? -1 : 1);
+        // features.push(url.includes(a.hostname) ? 1 : -1);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
+        // features.push(0);
 
         return features;
     }
-
-
 
 
     function lerpChannel(start, end, t) {
@@ -172,8 +170,9 @@
         cancelHideTooltip();
 
         const features = extractFeatures(a.href);
+        console.log(features)
         let prediction = score(features)[0];
-
+        console.log(score(features))
         if (prediction >= PREDICTION_THRESHOLD) {
             lastFeatures = features;
 

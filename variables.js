@@ -6,10 +6,10 @@ export const featureExplanations = [
     "The URL uses '//' in an unusual position, which may indicate redirection.",     // double_slash_redirecting
     "The domain name contains a dash, which is uncommon for legitimate sites.",      // prefix_suffix
     "The domain has too many subdomains, which is suspicious.",                      // having_sub_domain
-    "The site has no valid or trusted SSL certificate.",                             // sslfinal_state
-    "The domain registration length is short, indicating potential phishing.",       // domain_registration_length
-    "The favicon is loaded from an external domain.",                                // favicon
-    "The site is using a non-standard port.",                                        // port
+    // "The site has no valid or trusted SSL certificate.",                             // sslfinal_state
+    // "The domain registration length is short, indicating potential phishing.",       // domain_registration_length
+    // "The favicon is loaded from an external domain.",                                // favicon
+    // "The site is using a non-standard port.",                                        // port
     "The domain part of the URL includes a misleading HTTPS token.",                 // https_token
     "A high percentage of external resources in the page indicates phishing.",       // request_url
     "Too many anchor URLs lead to different domains.",                               // url_of_anchor
