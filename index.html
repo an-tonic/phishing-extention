@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>URL Feature Test Links</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 12px 0;
+        }
+        a {
+            color: #c0392b;
+            font-size: 18px;
+            word-break: break-all;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Test Links with Suspicious URL Features</h1>
+
+<ul>
+    <li><a href="http://192.168.0.1/login">IP Address in URL</a></li>
+    <li><a href="http://example.com@malicious.com/">URL with @ Symbol</a></li>
+    <li><a href="http://bit.ly/2xyzAbc">Shortened URL (bit.ly)</a></li>
+    <li><a href="http://example.com//login">Double Slash Redirect</a></li>
+    <li><a href="http://www.example.com/-secure-login">Prefix/Suffix in Domain</a></li>
+    <li><a href="http://very.sub.domain.example.com/login">Multiple Subdomains</a></li>
+    <li><a href="http://example.com/secure/https-login">Contains "https" Token in Path</a></li>
+    <li><a href="http://phishy-site.com?url=https://secure.com">HTTPS in Query Parameter</a></li>
+    <li><a href="https://insecure-example.com">Fake SSL (https with bad domain)</a></li>
+    <li><a href="http://login.example.com@evil.com/login">Combined Features (@ + Subdomain)</a></li>
+</ul>
+
+</body>
+</html>
