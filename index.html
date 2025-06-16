@@ -1,49 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>URL Feature Test Links</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fafafa;
-            padding: 30px;
-        }
-        h1 {
-            color: #2c3e50;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        li {
-            margin: 12px 0;
-        }
-        a {
-            color: #c0392b;
-            font-size: 18px;
-            word-break: break-all;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Phishing Feature Test URLs</title>
+  <style>
+    body {
+      font-family: monospace;
+      background-color: #f5f5f5;
+      padding: 30px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin: 12px 0;
+    }
+    a {
+      color: #2980b9;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 16px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Test Links with Suspicious URL Features</h1>
+  <h1>URL Feature Testing</h1>
+  <ul>
+    <!-- IP address in hostname -->
+    <li><a href="https://192.168.1.100/login">http://192.168.1.100/login</a></li>
 
-<ul>
-    <li><a href="http://192.168.0.1/login">http://192.168.0.1/login</a></li>
-    <li><a href="http://example.com@malicious.com/">http://example.com@malicious.com/</a></li>
-    <li><a href="http://bit.ly/2xyzAbc">http://bit.ly/2xyzAbc</a></li>
-    <li><a href="http://example.com//login">http://example.com//login</a></li>
-    <li><a href="http://www.example.com/-secure-login">http://www.example.com/-secure-login</a></li>
-    <li><a href="http://very.sub.domain.example.com/login">http://very.sub.domain.example.com/login</a></li>
-    <li><a href="http://example.com/secure/https-login">http://example.com/secure/https-login</a></li>
-    <li><a href="http://phishy-site.com?url=https://secure.com">http://phishy-site.com?url=https://secure.com</a></li>
-    <li><a href="http://login.example.com@evil.com/login">http://login.example.com@evil.com/login</a></li>
-</ul>
+    <!-- Long URL > 75 characters -->
+    <li><a href="https://example.com/some/really/long/path/that/exceeds/seventy-five/characters/to/test/length">http://example.com/some/really/long/path/that/exceeds/seventy-five/characters/to/test/length</a></li>
+
+    <!-- Shortening service -->
+    <li><a href="https://bit.ly/phishing">http://bit.ly/phishing</a></li>
+
+    <!-- Contains @ symbol -->
+    <li><a href="https://user@example.com@fake-login.com">http://user@example.com@fake-login.com</a></li>
+
+    <!-- Double slash beyond protocol -->
+    <li><a href="https://example.com//redirect/login">http://example.com//redirect/login</a></li>
+
+    <!-- Hyphen in domain -->
+    <li><a href="https://secure-paypal.com/login">http://secure-paypal.com/login</a></li>
+
+    <!-- Multiple subdomains -->
+    <li><a href="https://login.verify.account.example.com">http://login.verify.account.example.com</a></li>
+
+    <!-- Does NOT start with https:// -->
+    <li><a href="http://example.com/secure">http://example.com/secure</a></li>
+
+    <!-- Hostname contains 'https' -->
+    <li><a href="http://https-example.com/login">http://https-example.com/login</a></li>
+
+    <!-- All clean (baseline legit example) -->
+    <li><a href="https://example.com/home">https://example.com/home</a></li>
+  </ul>
 
 </body>
 </html>
